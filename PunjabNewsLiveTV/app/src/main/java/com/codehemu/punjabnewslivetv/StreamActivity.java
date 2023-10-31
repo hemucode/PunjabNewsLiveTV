@@ -113,8 +113,7 @@ public class StreamActivity extends AppCompatActivity {
                 service.getYoutubeData(apiUrl, new YoutubeDataService.OnDataResponse() {
                     @Override
                     public Void onError(String error) {
-                        startActivity(new Intent(StreamActivity.this, WebActivity.class).putExtra("title", channel.getName()).putExtra("url", "https://www.youtube.com/channel/" + channel.getYoutube() + "/live"));
-                        finish();
+                        web.loadUrl(" https://www.youtube.com/embed/live_stream?channel=" + channel.getYoutube());
                         return null;
                     }
 
