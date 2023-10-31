@@ -17,10 +17,12 @@ import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -54,14 +56,15 @@ public class StreamActivity extends AppCompatActivity {
     TextView Description;
     boolean isFullScreen = false;
     ExoPlayer player;
-    ProgressBar progressBar,progressBar2;
+    ProgressBar progressBar,progressBar2,progressBar3;
     private AdView adView1,adView2;
     LinearLayout linearLayout;
     NetworkChangeListener networkChangeListener = new NetworkChangeListener();
-    WebView web;
+    WebView web,web1;
     YoutubeDataService service;
 
     String title,youtubeID;
+    Button back,Go_live;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,68 +78,75 @@ public class StreamActivity extends AppCompatActivity {
         title = channel.getName();
         youtubeID = channel.getYoutube();
 
-        loadAds();
 
         playerView = findViewById(R.id.playerView);
         fullScreen = playerView.findViewById(R.id.exo_fullscreen_icon);
         progressBar = findViewById(R.id.progressBar);
         progressBar2 = findViewById(R.id.progressBar2);
+        progressBar3 = findViewById(R.id.progressBar3);
         web =  findViewById(R.id.webView);
+        web1 =  findViewById(R.id.webView1);
 
         String category = channel.getCategory();
         if (category.equals("m3u8")) {
             web.setVisibility(View.GONE);
             progressBar2.setVisibility(View.GONE);
-            playChannel(channel.getLive_url());
+            progressBar3.setVisibility(View.GONE);
+            playChannel(channel.getLive_url(), channel.getYoutube());
+            loadAds();
             fullScreen.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     setFullScreen("exo");
                 }
             });
-        }else if(category.equals("api")) {
+        }else {
             playerView.setVisibility(View.GONE);
             progressBar.setVisibility(View.GONE);
-            playChannel("");
+            progressBar3.setVisibility(View.GONE);
+            playChannel("", "");
 
-            service = new YoutubeDataService(this);
+            if (category.equals("api")) {
+                service = new YoutubeDataService(this);
+                String apiUrl = "https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=" + channel.getYoutube() + "&eventType=live&maxResults=1&order=date&type=video&key=" + channel.getLive_url();
 
-
-            String apiUrl = "https://www.googleapis.com/youtube/v3/search?part=snippet&channelId="+channel.getYoutube()+"&eventType=live&maxResults=1&order=date&type=video&key="+channel.getLive_url();
-
-            service.getYoutubeData(apiUrl, new YoutubeDataService.OnDataResponse() {
-                @Override
-                public Void onError(String error) {
-                    startActivity(new Intent(StreamActivity.this, WebActivity.class).putExtra("title",channel.getName()).putExtra("url","https://www.youtube.com/channel/"+channel.getYoutube()+"/live"));
-                    finish();
-                    return null;
-                }
-                @Override
-                public void onResponse(JSONObject response) {
-                    try {
-                        JSONArray jsonArray = response.getJSONArray("items");
-                        JSONObject jsonObject = jsonArray.getJSONObject(0);
-                        if (!jsonObject.getString("id").isEmpty()){
-                            JSONObject jsonObject1 = new JSONObject(jsonObject.getString("id"));
-                            web.loadUrl("https://www.youtube.com/embed/"+jsonObject1.getString("videoId"));
-                        }else {
-                            startActivity(new Intent(StreamActivity.this, WebActivity.class).putExtra("title",channel.getName()).putExtra("url","https://www.youtube.com/channel/"+channel.getYoutube()+"/live"));
-                            finish();
-                        }
-
-                    } catch (JSONException e) {
-                        startActivity(new Intent(StreamActivity.this, WebActivity.class).putExtra("title",channel.getName()).putExtra("url","https://www.youtube.com/channel/"+channel.getYoutube()+"/live"));
+                service.getYoutubeData(apiUrl, new YoutubeDataService.OnDataResponse() {
+                    @Override
+                    public Void onError(String error) {
+                        startActivity(new Intent(StreamActivity.this, WebActivity.class).putExtra("title", channel.getName()).putExtra("url", "https://www.youtube.com/channel/" + channel.getYoutube() + "/live"));
                         finish();
+                        return null;
                     }
 
-                }
-            });
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            JSONArray jsonArray = response.getJSONArray("items");
+                            JSONObject jsonObject = jsonArray.getJSONObject(0);
+                            if (!jsonObject.getString("id").isEmpty()) {
+                                JSONObject jsonObject1 = new JSONObject(jsonObject.getString("id"));
+                                web.loadUrl("https://www.youtube.com/embed/" + jsonObject1.getString("videoId"));
+                            } else {
+                                web.loadUrl(" https://www.youtube.com/embed/live_stream?channel=" + channel.getYoutube());
+                            }
+
+                        } catch (JSONException e) {
+                            web.loadUrl(" https://www.youtube.com/embed/live_stream?channel=" + channel.getYoutube());
+                        }
+
+                    }
+                });
+
+
+            } else if (category.equals("yt")) {
+                web.loadUrl(channel.getLive_url() + channel.getYoutube());
+            }
 
             web.getSettings().setJavaScriptEnabled(true);
             web.getSettings().setLoadWithOverviewMode(true);
             web.getSettings().setUseWideViewPort(true);
 
-            web.setWebViewClient(new WebViewClient(){
+            web.setWebViewClient(new WebViewClient() {
                 @Override
                 public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                     super.onReceivedError(view, request, error);
@@ -158,16 +168,16 @@ public class StreamActivity extends AppCompatActivity {
                             "{display:none !important;}`;" +
                             "head.appendChild(css);" +
                             "document.querySelector('.ytp-play-button').click();" +
-                            "css.type = 'text/css';"+
-                            "if(document.querySelector('.ytp-error-content-wrap-reason')){Android.showToast(`error`);}else{Android.showToast(`noError`);}"+
+                            "css.type = 'text/css';" +
+                            "if(document.querySelector('.ytp-error-content-wrap-reason')){Android.showToast(`error`);}else{Android.showToast(`noError`);}" +
                             "let ytpFullscreenButton = document.querySelector('.ytp-fullscreen-button');" +
                             "ytpFullscreenButton.addEventListener('click', function() { Android.showToast(`toast`); });";
 
-                    web.evaluateJavascript(Script,null);
-                    try{
+                    web.evaluateJavascript(Script, null);
+                    try {
                         Thread.sleep(1000);
                         progressBar2.setVisibility(View.GONE);
-                    }catch(InterruptedException e){
+                    } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
@@ -175,6 +185,8 @@ public class StreamActivity extends AppCompatActivity {
 
             web.addJavascriptInterface(new WebAppInterface(this), "Android");
         }
+
+
 
 
         fbLink = findViewById(R.id.fbLink);
@@ -205,6 +217,54 @@ public class StreamActivity extends AppCompatActivity {
         Description = findViewById(R.id.channelDes);
         Description.setText(channel.getDescription());
         Description.setSelected(true);
+
+    }
+    private void stepChange(String channelYoutube) {
+        web.setVisibility(View.GONE);
+        web1.setVisibility(View.INVISIBLE);
+        progressBar2.setVisibility(View.GONE);
+        progressBar3.setVisibility(View.VISIBLE);
+        playerView.setVisibility(View.GONE);
+        progressBar.setVisibility(View.GONE);
+        web1.loadUrl(" https://www.youtube.com/embed/live_stream?channel="+ channelYoutube);
+
+        web1.getSettings().setJavaScriptEnabled(true);
+        web1.getSettings().setLoadWithOverviewMode(true);
+        web1.getSettings().setUseWideViewPort(true);
+
+        web1.setWebViewClient(new WebViewClient(){
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                String Script = "var css = document.createElement('style');" +
+                        "var head = document.head;" +
+                        "css.innerText = `" +
+                        ".ytp-show-cards-title," +
+                        ".ytp-pause-overlay," +
+                        ".branding-img," +
+                        ".ytp-large-play-button," +
+                        ".ytp-youtube-button," +
+                        ".ytp-menuitem:nth-child(1)," +
+                        ".ytp-small-redirect," +
+                        ".ytp-menuitem:nth-child(4)" +
+                        "{display:none !important;}`;" +
+                        "head.appendChild(css);" +
+                        "document.querySelector('.ytp-play-button').click();" +
+                        "css.type = 'text/css';"+
+                        "if(document.querySelector('.ytp-error-content-wrap-reason')){Android.showToast(`error`);}else{Android.showToast(`noErrorWeb1`);}"+
+                        "let ytpFullscreenButton = document.querySelector('.ytp-fullscreen-button');" +
+                        "ytpFullscreenButton.addEventListener('click', function() { Android.showToast(`toast`); });";
+
+                web1.evaluateJavascript(Script,null);
+                try{
+                    Thread.sleep(1000);
+                    progressBar3.setVisibility(View.GONE);
+                }catch(InterruptedException e){
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        web1.addJavascriptInterface(new WebAppInterface(this), "Android");
 
     }
 
@@ -291,7 +351,19 @@ public class StreamActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         web.setVisibility(View.VISIBLE);
+                        loadAds();
                     }
+
+                });
+            }
+
+            if (toast.equals("noErrorWeb1")){
+                StreamActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        web1.setVisibility(View.VISIBLE);
+                    }
+
                 });
             }
 
@@ -300,7 +372,25 @@ public class StreamActivity extends AppCompatActivity {
                 StreamActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        startActivity(new Intent(StreamActivity.this, WebActivity.class).putExtra("title", title).putExtra("url","https://www.youtube.com/channel/"+youtubeID+"/live"));
+
+                        final Dialog dialog = new Dialog(StreamActivity.this); // Context, this, etc.
+                        dialog.setContentView(R.layout.go_yt_live);
+                        back = dialog.findViewById(R.id.back);
+                        back.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                onBackPressed();
+                            }
+                        });
+                        Go_live = dialog.findViewById(R.id.go_live);
+                        Go_live.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                startActivity(new Intent(StreamActivity.this, WebActivity.class).putExtra("title", title).putExtra("url","https://www.youtube.com/channel/"+youtubeID+"/live"));
+                            }
+                        });
+
+                        dialog.show();
                     }
                 });
             }
@@ -321,7 +411,7 @@ public class StreamActivity extends AppCompatActivity {
     }
 
 
-    public void playChannel(String LiveUrl){
+    public void playChannel(String LiveUrl,String channelYoutube){
         player = new ExoPlayer.Builder(this).build();
         playerView.setPlayer(player);
 
@@ -345,10 +435,17 @@ public class StreamActivity extends AppCompatActivity {
                 }else {
                     progressBar.setVisibility(View.GONE);
                     player.setPlayWhenReady(true);
+                    if (!channelYoutube.isEmpty()){
+                        stepChange(channelYoutube);
+                    }
+
                 }
             }
+
+
         });
     }
+
 
     @Override
     protected void onResume() {
@@ -414,4 +511,8 @@ public class StreamActivity extends AppCompatActivity {
         unregisterReceiver(networkChangeListener);
         super.onStop();
     }
+
+
+
+
 }

@@ -1,6 +1,7 @@
 package com.codehemu.punjabnewslivetv;
 
 
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -10,6 +11,7 @@ import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -107,7 +109,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         getListActivity2("no",getString(R.string.Bengali_news_json));
         getListActivity3("no",getString(R.string.Hindi_news_json));
 
-        adsDisplay();
+        MobileAds.initialize(this, initializationStatus -> {});
+        adView = findViewById(R.id.adView);
+        adView1 = findViewById(R.id.adView1);
+        adView2 = findViewById(R.id.adView2);
+
         RefreshLayout();
         RequestReviewInfo();
         moreButton();
@@ -255,7 +261,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mSwipeRefreshLayout = findViewById(R.id.refresh_app);
         mSwipeRefreshLayout.setOnRefreshListener(() -> {
             mSwipeRefreshLayout.setRefreshing(false);
-            adsDisplay();
             getListActivity1("yes",getString(R.string.Bengali_banner_json));
             getListActivity2("yes",getString(R.string.Bengali_news_json));
             getListActivity3("yes",getString(R.string.Hindi_news_json));
@@ -295,6 +300,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         newsChannelAdopters = new ChannelAdopters(this, newsChannels, "big"){
             @Override
             public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+                AdRequest adRequest = new AdRequest.Builder().build();
+                adView.loadAd(adRequest);
                 super.onBindViewHolder(holder, position);
             }
 
@@ -402,9 +409,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         newsChannelList2 = findViewById(R.id.SliderList_2);
         newsChannelList2.setLayoutManager(new GridLayoutManager(this, 4, LinearLayoutManager.VERTICAL, false));
         newsChannels2 = new ArrayList<>();
+        final Dialog dialog = new Dialog(MainActivity.this); // Context, this, etc.
+        dialog.setContentView(R.layout.preparing_loading);
+        dialog.show();
         newsChannelAdopters2 = new ChannelAdopters(this, newsChannels2, "small"){
             @Override
             public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+                AdRequest adRequest1 = new AdRequest.Builder().build();
+                dialog.cancel();
+                adView1.loadAd(adRequest1);
                 super.onBindViewHolder(holder, position);
             }
         };
@@ -511,6 +524,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         newsChannelAdopters3 = new ChannelAdopters(this, newsChannels3, "small"){
             @Override
             public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+                AdRequest adRequest2 = new AdRequest.Builder().build();
+                adView2.loadAd(adRequest2);
                 super.onBindViewHolder(holder, position);
             }
         };
@@ -610,20 +625,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
 
-    public void adsDisplay(){
-        MobileAds.initialize(this, initializationStatus -> {
-        });
-
-        adView = findViewById(R.id.adView);
-        adView1 = findViewById(R.id.adView1);
-        adView2 = findViewById(R.id.adView2);
-
-
-        AdRequest adRequest = new AdRequest.Builder().build();
-        adView.loadAd(adRequest);
-        adView1.loadAd(adRequest);
-        adView2.loadAd(adRequest);
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
