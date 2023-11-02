@@ -1,6 +1,7 @@
 package com.codehemu.punjabnewslivetv;
 
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -11,12 +12,12 @@ import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -61,6 +62,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
     AdView adView, adView1,adView2;
+    LinearLayout linearLayout;
     public static final String TAG = "TAG";
     RecyclerView newsChannelList,newsChannelList2,newsChannelList3;
     ChannelAdopters newsChannelAdopters,newsChannelAdopters2,newsChannelAdopters3;
@@ -75,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     String appsName, packageName;
     ReviewManager manager;
     ReviewInfo reviewInfo;
-    TextView more_bengali,more_hindi;
+    TextView more_bengali,more_hindi,email_click;
     Button ePaper,englishNews,topNews,RateBtn,aboutBtn,shareBtn;
     private InAppUpdate inAppUpdate;
 
@@ -119,7 +121,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         moreButton();
 
         new webScript().execute();
-
 
     }
 
@@ -207,6 +208,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     putExtra("title","Privacy Policy")
                     .putExtra("url",getString(R.string.policy_url)));
         }
+        if (item.getItemId() == R.id.disclaimer) {
+            final Dialog dialog = new Dialog(MainActivity.this); // Context, this, etc.
+            dialog.setContentView(R.layout.activity_disclaimer);
+            linearLayout = dialog.findViewById(R.id.dismiss);
+            linearLayout.setOnClickListener(v -> dialog.cancel());
+            email_click = dialog.findViewById(R.id.email_click);
+
+            email_click.setOnClickListener(v -> {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                String emailID = getString(R.string.my_email);
+                String AppNAME = getString(R.string.app_name);
+                Uri data = Uri.parse("mailto:"
+                        + emailID
+                        + "?subject=" +AppNAME+ " Feedback" + "&body=" + "");
+                intent.setData(data);
+                startActivity(intent);
+            });
+
+            dialog.show();
+        }
 
         if (item.getItemId() == R.id.share) {
             LinkShareApp();
@@ -214,6 +235,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         if (item.getItemId() == R.id.rate) {
             LinkRateUs();
+        }
+        if (item.getItemId() == R.id.more) {
+            openLink("https://play.google.com/store/apps/dev?id=7464231534566513633");
         }
         if (item.getItemId() == R.id.about) {
             startActivity(new Intent(MainActivity.this, AboutActivity.class));
@@ -292,7 +316,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
 
-    public void getListActivity1(String refresh,String url) {
+    @SuppressLint("NotifyDataSetChanged")
+    public void getListActivity1(String refresh, String url) {
         newsChannelList = findViewById(R.id.SliderList_1);
         newsChannelList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
@@ -338,6 +363,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     Log.d(TAG, "onErrorResponse: " + error);
                     return null;
                 }
+                @SuppressLint("NotifyDataSetChanged")
                 @Override
                 public void onResponse(JSONArray response) {
                     SharedPreferences sharedPreferences = MainActivity.this.getSharedPreferences("BigBengaliJson",Context.MODE_PRIVATE);
@@ -405,7 +431,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
-    public void getListActivity2(String refresh,String url) {
+    @SuppressLint("NotifyDataSetChanged")
+    public void getListActivity2(String refresh, String url) {
         newsChannelList2 = findViewById(R.id.SliderList_2);
         newsChannelList2.setLayoutManager(new GridLayoutManager(this, 4, LinearLayoutManager.VERTICAL, false));
         newsChannels2 = new ArrayList<>();
@@ -450,6 +477,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     Log.d(TAG, "onErrorResponse: " + error);
                     return null;
                 }
+                @SuppressLint("NotifyDataSetChanged")
                 @Override
                 public void onResponse(JSONArray response) {
                     SharedPreferences sharedPreferences = MainActivity.this.getSharedPreferences("BengaliJson",Context.MODE_PRIVATE);
@@ -517,7 +545,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
-    public void getListActivity3(String refresh,String url) {
+    @SuppressLint("NotifyDataSetChanged")
+    public void getListActivity3(String refresh, String url) {
         newsChannelList3 = findViewById(R.id.SliderList_3);
         newsChannelList3.setLayoutManager(new GridLayoutManager(this, 4, LinearLayoutManager.VERTICAL, false));
         newsChannels3 = new ArrayList<>();
@@ -542,7 +571,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
                 @Override
                 public void onResponse(JSONArray response) {
-                //    Log.d(TAG, "onErrorResponse: " + response.toString());
                     SharedPreferences sharedPreferences = MainActivity.this.getSharedPreferences("HindiJson",Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putString("str",response.toString());
@@ -557,6 +585,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     Log.d(TAG, "onErrorResponse: " + error);
                     return null;
                 }
+                @SuppressLint("NotifyDataSetChanged")
                 @Override
                 public void onResponse(JSONArray response) {
                     SharedPreferences sharedPreferences = MainActivity.this.getSharedPreferences("HindiJson",Context.MODE_PRIVATE);
@@ -644,7 +673,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         inAppUpdate.onDestroy();
     }
 
+    @SuppressLint("StaticFieldLeak")
     private class webScript extends AsyncTask<Void , Void, Void> {
+        @Nullable
         @Override
         protected Void doInBackground(Void... voids) {
 
@@ -668,6 +699,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         HashMap<String, JSONObject> map = new HashMap<>();
                         Log.d(TAG, "1onErrorResponse: " + "desc");
                         Document document;
+
                         String desc;
                         for (int i = 0; i < 20; i++){
                             JSONObject channelData = jsonArray.getJSONObject(i);
@@ -720,10 +752,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         editor.apply();
                     }
 
-                } catch (JSONException e) {
-                    //throw new RuntimeException(e);
-                } catch (IOException e) {
-                    // throw new RuntimeException(e);
+                } catch (JSONException | IOException e) {
+                    Log.d(TAG, "1onErrorResponse: " + e);
                 }
             }
 
@@ -735,7 +765,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     JSONArray jsonArray = new JSONArray(JsonValue);
                     Document document;
                     String desc;
-                    for (int i = 0; i < 20; i++){
+                    for (int i = 0; i < 10; i++){
                         JSONObject channelData = jsonArray.getJSONObject(i);
                         document = Jsoup.connect(channelData.getString("link")).get();
                         Elements rightSec = document.select(".khbr_rght_sec").select("p");

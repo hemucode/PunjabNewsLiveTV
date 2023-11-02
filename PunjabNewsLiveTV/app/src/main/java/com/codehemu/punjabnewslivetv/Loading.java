@@ -2,6 +2,7 @@ package com.codehemu.punjabnewslivetv;
 
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -25,6 +26,7 @@ import org.jsoup.nodes.Element;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Objects;
 
 
 public class Loading extends AppCompatActivity {
@@ -32,29 +34,28 @@ public class Loading extends AppCompatActivity {
 
     TextView textView;
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_loading);
 
-        getSupportActionBar().hide();
+        Objects.requireNonNull(getSupportActionBar()).hide();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         String versionName = BuildConfig.VERSION_NAME;
         textView = findViewById(R.id.textView);
         textView.setText("Version "+versionName);
         handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Loading.this.startActivity(new Intent(Loading.this, MainActivity.class));
-                finish();
-            }
-        },1500);
+        handler.postDelayed(() -> {
+            Loading.this.startActivity(new Intent(Loading.this, MainActivity.class));
+            finish();
+        },2000);
         if (Common.isConnectToInternet(Loading.this)) {
             new webScript().execute();
         }
     }
+    @SuppressLint("StaticFieldLeak")
     private class webScript extends AsyncTask<Void , Void, Void> {
 
         @Override
@@ -64,7 +65,7 @@ public class Loading extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            Document document  = null;
+            Document document;
             Element titleE,linksE,thumbnailE;
             String title,links,thumbnail;
 
@@ -72,7 +73,7 @@ public class Loading extends AppCompatActivity {
                 document = Jsoup.connect("https://punjab.news18.com/commonfeeds/v1/pan/rss/punjab.xml").get();
 
                 JSONArray arr = new JSONArray();
-                HashMap<String, JSONObject> map = new HashMap<String, JSONObject>();
+                HashMap<String, JSONObject> map = new HashMap<>();
 
                 for (int i =0; i< 20; i++){
                     titleE = document.select("item").select("title").get(i);
@@ -100,15 +101,13 @@ public class Loading extends AppCompatActivity {
                 SharedPreferences sharedPreferences = getSharedPreferences("shorts", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString("row",arr.toString());
-                Log.d(TAG, "1onResponse: " + arr.toString());
+                Log.d(TAG, "1onResponse: " + arr);
                 editor.apply();
 
             } catch (IOException e) {
                 Log.d(TAG, "1onError: RSS Feed Url Connect Error =" + e);
-                Loading.this.startActivity(new Intent(Loading.this, MainActivity.class));
             } catch (JSONException e) {
                 Log.d(TAG, "1onError: RSS Feed Json Load Error =" + e);
-                Loading.this.startActivity(new Intent(Loading.this, MainActivity.class));
             }
             return null;
         }

@@ -14,9 +14,9 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="5dp"
+            android:padding="15dp"
             android:gravity="center"
-            android:text="यह चैनल अभी लाइव नहीं है, आप चाहें तो यूट्यूब पर लाइव देख सकते हैं"
+            android:text="ਇਹ ਚੈਨਲ ਅਜੇ ਲਾਈਵ ਨਹੀਂ ਹੈ, ਤੁਸੀਂ ਯੂਟਿਊਬ 'ਤੇ ਲਾਈਵ ਦੇਖ ਸਕਦੇ ਹੋ"
             tools:ignore="HardcodedText">
 
         </TextView>
@@ -33,19 +33,22 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="back"
-            app:icon="@drawable/arrow_back"
+            android:text="Close"
+            app:icon="@drawable/baseline_close"
             tools:ignore="ButtonStyle,HardcodedText,VisualLintButtonSize" />
 
         <Button
             android:id="@+id/go_live"
-            android:layout_margin="5dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="5dp"
             android:layout_weight="1"
-            android:text="Go Youtube Live"
+            android:backgroundTint="#FF0000"
+            android:text="Go YouTube"
+            android:textColor="@color/white"
             app:icon="@drawable/ic_motion_video"
-            tools:ignore="ButtonStyle,HardcodedText,VisualLintButtonSize" />
+            tools:ignore="ButtonStyle,HardcodedText,VisualLintButtonSize,TextContrastCheck" />
+
     </LinearLayout>
 
 

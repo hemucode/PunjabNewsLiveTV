@@ -1,6 +1,7 @@
 package com.codehemu.punjabnewslivetv.adopters;
 
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -33,16 +34,13 @@ import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ChannelAdopters extends RecyclerView.Adapter<ChannelAdopters.ViewHolder> {
     List<Channel> channels;
     private InterstitialAd mInterstitialAd;
     String type;
-    private Context mContext;
-    private Map<String, Bitmap> mBitmaps = new HashMap<>();
+    private final Context mContext;
 
     public ChannelAdopters(Context mContext, List<Channel> channels, String type) {
         this.channels = channels;
@@ -54,21 +52,25 @@ public class ChannelAdopters extends RecyclerView.Adapter<ChannelAdopters.ViewHo
     @Override
     public ChannelAdopters.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v;
-        if (type.equals("small")) {
-            v = LayoutInflater.from(mContext).inflate(R.layout.item_small, parent, false);
-        }else if (type.equals("medium")){
-            v = LayoutInflater.from(mContext).inflate(R.layout.item_medium, parent, false);
-        }else if (type.equals("big")){
-            v = LayoutInflater.from(mContext).inflate(R.layout.item_big, parent, false);
-        }else {
-            v = LayoutInflater.from(mContext).inflate(R.layout.item_details, parent, false);
+        switch (type) {
+            case "small":
+                v = LayoutInflater.from(mContext).inflate(R.layout.item_small, parent, false);
+                break;
+            case "medium":
+                v = LayoutInflater.from(mContext).inflate(R.layout.item_medium, parent, false);
+                break;
+            case "big":
+                v = LayoutInflater.from(mContext).inflate(R.layout.item_big, parent, false);
+                break;
+            default:
+                v = LayoutInflater.from(mContext).inflate(R.layout.item_details, parent, false);
+                break;
         }
         return new ViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ChannelAdopters.ViewHolder holder, int position) {
-        int positions = position;
+    public void onBindViewHolder(@NonNull ChannelAdopters.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         String Category = channels.get(position).getCategory();
         Channel ChannelDataItem = channels.get(position);
         holder.textView.setText(channels.get(position).getName());
@@ -81,60 +83,47 @@ public class ChannelAdopters extends RecyclerView.Adapter<ChannelAdopters.ViewHo
 
         if (holder.website!= null){
             holder.website.setText(ChannelDataItem.getWebsite());
-            holder.website.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent linkOpen = new Intent(Intent.ACTION_VIEW, Uri.parse(ChannelDataItem.getWebsite()));
-                    v.getContext().startActivity(linkOpen);
-                }
+            holder.website.setOnClickListener(v -> {
+                Intent linkOpen = new Intent(Intent.ACTION_VIEW, Uri.parse(ChannelDataItem.getWebsite()));
+                v.getContext().startActivity(linkOpen);
             });
         }
         if (holder.liveUrl != null){
             holder.liveUrl.setText(ChannelDataItem.getLiveTvLink());
-            holder.liveUrl.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent linkOpen = new Intent(Intent.ACTION_VIEW, Uri.parse(ChannelDataItem.getLiveTvLink()));
-                    v.getContext().startActivity(linkOpen);
-                }
+            holder.liveUrl.setOnClickListener(v -> {
+                Intent linkOpen = new Intent(Intent.ACTION_VIEW, Uri.parse(ChannelDataItem.getLiveTvLink()));
+                v.getContext().startActivity(linkOpen);
             });
         }
 
         if (holder.yt!= null){
             String ytLink =  "https://www.youtube.com/channel/"+ ChannelDataItem.getYoutube();
             holder.yt.setText(ytLink);
-            holder.yt.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent linkOpen = new Intent(Intent.ACTION_VIEW, Uri.parse(ytLink));
-                    v.getContext().startActivity(linkOpen);
-                }
+            holder.yt.setOnClickListener(v -> {
+                Intent linkOpen = new Intent(Intent.ACTION_VIEW, Uri.parse(ytLink));
+                v.getContext().startActivity(linkOpen);
             });
         }
 
         if (holder.fb!= null){
             String fbLink  ="https://www.facebook.com/"+ChannelDataItem.getFacebook();
             holder.fb.setText(fbLink);
-            holder.fb.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent linkOpen = new Intent(Intent.ACTION_VIEW, Uri.parse(fbLink));
-                    v.getContext().startActivity(linkOpen);
-                }
+            holder.fb.setOnClickListener(v -> {
+                Intent linkOpen = new Intent(Intent.ACTION_VIEW, Uri.parse(fbLink));
+                v.getContext().startActivity(linkOpen);
             });
         }
 
         if (holder.email!= null){
             holder.email.setText(ChannelDataItem.getContact());
-            holder.email.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent linkOpen = new Intent(Intent.ACTION_VIEW, Uri.parse("mailto:"+ChannelDataItem.getContact()));
-                    v.getContext().startActivity(linkOpen);
-                }
+            holder.email.setOnClickListener(v -> {
+                Intent linkOpen = new Intent(Intent.ACTION_VIEW, Uri.parse("mailto:"+ChannelDataItem.getContact()));
+                v.getContext().startActivity(linkOpen);
             });
         }
 
+        int positions;
+        positions = position;
         if (holder.button!= null){
             holder.button.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -236,6 +225,7 @@ public class ChannelAdopters extends RecyclerView.Adapter<ChannelAdopters.ViewHo
         }
     }
 
+    @SuppressLint("StaticFieldLeak")
     class MyImageTask extends AsyncTask<Channel, Void, Bitmap> {
 
         private Channel mChannel;
@@ -288,14 +278,14 @@ public class ChannelAdopters extends RecyclerView.Adapter<ChannelAdopters.ViewHo
         InterstitialAd.load(mContext,mContext.getString(R.string.InterstitialAd), adRequest,
                 new InterstitialAdLoadCallback() {
                     @Override
-                    public void onAdLoaded(InterstitialAd interstitialAd) {
+                    public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
                         // The mInterstitialAd reference will be null until
                         // an ad is loaded.
                         mInterstitialAd = interstitialAd;
                     }
 
                     @Override
-                    public void onAdFailedToLoad(LoadAdError loadAdError) {
+                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                         // Handle the error
                         mInterstitialAd = null;
                     }

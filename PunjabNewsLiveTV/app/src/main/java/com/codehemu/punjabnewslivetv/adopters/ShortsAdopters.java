@@ -62,14 +62,11 @@ public class ShortsAdopters extends PagerAdapter {
         Glide.with(context).load(images.get(position)).centerCrop().into(imageView);
         Glide.with(context).load(images.get(position)).centerCrop().override(12,12).into(imageView1);
 
-        textView2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent t = new Intent(v.getContext(), WebActivity.class);
-                t.putExtra("title","Short");
-                t.putExtra("url",links.get(position));
-                v.getContext().startActivity(t);
-            }
+        textView2.setOnClickListener(v -> {
+            Intent t = new Intent(v.getContext(), WebActivity.class);
+            t.putExtra("title","Short");
+            t.putExtra("url",links.get(position));
+            v.getContext().startActivity(t);
         });
 
         container.addView(itemView);

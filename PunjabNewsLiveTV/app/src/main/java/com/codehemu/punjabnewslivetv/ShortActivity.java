@@ -2,6 +2,7 @@ package com.codehemu.punjabnewslivetv;
 
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -24,6 +25,7 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class ShortActivity extends AppCompatActivity {
     ShortsAdopters shortsAdopters;
@@ -36,14 +38,14 @@ public class ShortActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_short);
-        getSupportActionBar().hide();
+        Objects.requireNonNull(getSupportActionBar()).hide();
 
         SharedPreferences getShared = getSharedPreferences("shorts", MODE_PRIVATE);
         String JsonValue = getShared.getString("edit","noValue");
 
 
         if (!JsonValue.equals("noValue")){
-            final VerticalViewPager verticalViewPages = (VerticalViewPager) findViewById(R.id.VerticalViewPage);
+            final VerticalViewPager verticalViewPages = findViewById(R.id.VerticalViewPage);
 
             shortsAdopters = new ShortsAdopters(ShortActivity.this,title,desc,image,link);
             verticalViewPages.setAdapter(shortsAdopters);
@@ -70,6 +72,7 @@ public class ShortActivity extends AppCompatActivity {
 
     }
 
+    @SuppressLint("StaticFieldLeak")
     private class webScript extends AsyncTask<Void , Void, Void> {
 
         @Override
@@ -97,9 +100,9 @@ public class ShortActivity extends AppCompatActivity {
                     if (!row.getString("title").equals(edit.getString("title")) ||
                             edit.getString("desc").equals("")){
                         JSONArray arr = new JSONArray();
-                        HashMap<String, JSONObject> map = new HashMap<String, JSONObject>();
+                        HashMap<String, JSONObject> map = new HashMap<>();
                         Log.d(TAG, "1onErrorResponse: " + "desc");
-                        Document document  = null;
+                        Document document;
                         String desc;
                         for (int i = 0; i < 20; i++){
                             JSONObject channelData = jsonArray.getJSONObject(i);
@@ -152,10 +155,8 @@ public class ShortActivity extends AppCompatActivity {
                         editor.apply();
                     }
 
-                } catch (JSONException e) {
+                } catch (JSONException | IOException e) {
                     //throw new RuntimeException(e);
-                } catch (IOException e) {
-                    // throw new RuntimeException(e);
                 }
 
             }

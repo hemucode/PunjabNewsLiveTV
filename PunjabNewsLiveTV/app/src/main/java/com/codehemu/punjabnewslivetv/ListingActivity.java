@@ -1,6 +1,7 @@
 package com.codehemu.punjabnewslivetv;
 
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -33,6 +34,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ListingActivity extends AppCompatActivity {
     public static final String TAG = "TAG";
@@ -51,7 +53,7 @@ public class ListingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_listing);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         service = new ChannelDataService(this);
 
@@ -61,64 +63,48 @@ public class ListingActivity extends AppCompatActivity {
         if (extras != null) {
             String activity = extras.getString("activity");
 
+            assert activity != null;
             if (activity.equals("containing")){
-                mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-                    @Override
-                    public void onRefresh() {
-                        mSwipeRefreshLayout.setRefreshing(false);
-                    }
-                });
+                mSwipeRefreshLayout.setOnRefreshListener(() -> mSwipeRefreshLayout.setRefreshing(false));
                 getSupportActionBar().setTitle(R.string.containing_information);
                 getListActivity("no","BengaliJson",getString(R.string.Bengali_news_json),"details",1);
                 getListActivity1("HindiJson",getString(R.string.Hindi_news_json),"details",1);
             }
             if (activity.equals("bengaliNews")) {
-                mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-                    @Override
-                    public void onRefresh() {
-                        mSwipeRefreshLayout.setRefreshing(false);
-                        getListActivity("yes","BengaliJson",getString(R.string.Bengali_news_json),"medium",2);
+                mSwipeRefreshLayout.setOnRefreshListener(() -> {
+                    mSwipeRefreshLayout.setRefreshing(false);
+                    getListActivity("yes","BengaliJson",getString(R.string.Bengali_news_json),"medium",2);
 
-                    }
                 });
                 getSupportActionBar().setTitle(R.string.bengali_channel);
                 getListActivity("no","BengaliJson",getString(R.string.Bengali_news_json),"medium",2);
 
             }
             if (activity.equals("hindiNews")) {
-                mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-                    @Override
-                    public void onRefresh() {
-                        mSwipeRefreshLayout.setRefreshing(false);
-                        getListActivity("yes","HindiJson",getString(R.string.Hindi_news_json),"medium",2);
+                mSwipeRefreshLayout.setOnRefreshListener(() -> {
+                    mSwipeRefreshLayout.setRefreshing(false);
+                    getListActivity("yes","HindiJson",getString(R.string.Hindi_news_json),"medium",2);
 
-                    }
                 });
                 getSupportActionBar().setTitle(R.string.hindi_news_channel);
                 getListActivity("no","HindiJson",getString(R.string.Hindi_news_json),"medium",2);
 
             }
             if (activity.equals("EnglishNews")) {
-                mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-                    @Override
-                    public void onRefresh() {
-                        mSwipeRefreshLayout.setRefreshing(false);
-                        getListActivity("yes","EnglishJson",getString(R.string.English_news_json),"medium",2);
+                mSwipeRefreshLayout.setOnRefreshListener(() -> {
+                    mSwipeRefreshLayout.setRefreshing(false);
+                    getListActivity("yes","EnglishJson",getString(R.string.English_news_json),"medium",2);
 
-                    }
                 });
                 getSupportActionBar().setTitle(R.string.english_news_channel);
                 getListActivity("no","EnglishJson",getString(R.string.English_news_json),"medium",2);
 
             }
             if (activity.equals("bengaliPaper")) {
-                mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-                    @Override
-                    public void onRefresh() {
-                        mSwipeRefreshLayout.setRefreshing(false);
-                        getListActivity("no","PaperJson",getString(R.string.Bengali_paper_json),"medium",2);
+                mSwipeRefreshLayout.setOnRefreshListener(() -> {
+                    mSwipeRefreshLayout.setRefreshing(false);
+                    getListActivity("no","PaperJson",getString(R.string.Bengali_paper_json),"medium",2);
 
-                    }
                 });
                 getSupportActionBar().setTitle(R.string.e_paper);
                 getListActivity("no","PaperJson",getString(R.string.Bengali_paper_json),"medium",2);
@@ -128,7 +114,8 @@ public class ListingActivity extends AppCompatActivity {
     }
 
 
-    public void getListActivity(String refresh,String storeName,String url,String item, int spanCount) {
+    @SuppressLint("NotifyDataSetChanged")
+    public void getListActivity(String refresh, String storeName, String url, String item, int spanCount) {
         progressBar = findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
         newsChannelList = findViewById(R.id.recyclerView);
@@ -173,6 +160,7 @@ public class ListingActivity extends AppCompatActivity {
                     return null;
                 }
 
+                @SuppressLint("NotifyDataSetChanged")
                 @Override
                 public void onResponse(JSONArray response) {
                     for (int i = 0; i < response.length(); i++) {
@@ -235,7 +223,8 @@ public class ListingActivity extends AppCompatActivity {
         }
 
     }
-    public void getListActivity1(String storeName,String url,String item, int spanCount) {
+    @SuppressLint("NotifyDataSetChanged")
+    public void getListActivity1(String storeName, String url, String item, int spanCount) {
         newsChannelList = findViewById(R.id.recyclerView);
         newsChannels1 = new ArrayList<>();
         newsChannelList.setLayoutManager(new GridLayoutManager(this, spanCount, LinearLayoutManager.VERTICAL,false));
@@ -259,6 +248,7 @@ public class ListingActivity extends AppCompatActivity {
                     return null;
                 }
 
+                @SuppressLint("NotifyDataSetChanged")
                 @Override
                 public void onResponse(JSONArray response) {
                     for (int i = 0; i < response.length(); i++) {
@@ -336,12 +326,7 @@ public class ListingActivity extends AppCompatActivity {
                 final Dialog dialog = new Dialog(context); // Context, this, etc.
                 dialog.setContentView(R.layout.activity_network);
                 linearLayout = dialog.findViewById(R.id.dismiss);
-                linearLayout.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        dialog.cancel();
-                    }
-                });
+                linearLayout.setOnClickListener(v -> dialog.cancel());
                 dialog.show();
             }
         }

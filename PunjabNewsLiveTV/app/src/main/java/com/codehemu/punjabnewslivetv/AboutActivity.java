@@ -1,10 +1,10 @@
 package com.codehemu.punjabnewslivetv;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -14,19 +14,20 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.initialization.InitializationStatus;
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
+
+import java.util.Objects;
 
 public class AboutActivity extends AppCompatActivity {
     TextView website,email,policy,version;
     Button button;
     private AdView adView;
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getSupportActionBar().setTitle(R.string.about_app);
+        Objects.requireNonNull(getSupportActionBar()).setTitle(R.string.about_app);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         setContentView(R.layout.activity_about);
@@ -36,50 +37,34 @@ public class AboutActivity extends AppCompatActivity {
         version = findViewById(R.id.version);
         button = findViewById(R.id.contain);
 
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(AboutActivity.this, ListingActivity.class).
-                        putExtra("activity","containing"));
-            }
-        });
+        button.setOnClickListener(v -> startActivity(new Intent(AboutActivity.this, ListingActivity.class).
+                putExtra("activity","containing")));
 
-        website.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String url = getString(R.string.my_website);
-                openLink(url);
-            }
+        website.setOnClickListener(v -> {
+            String url = getString(R.string.my_website);
+            openLink(url);
         });
-        email.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                String emailID = getString(R.string.my_email);
-                String AppNAME = getString(R.string.app_name);
-                Uri data = Uri.parse("mailto:"
-                        + emailID
-                        + "?subject=" +AppNAME+ " Feedback" + "&body=" + "");
-                intent.setData(data);
-                startActivity(intent);
-            }
+        email.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            String emailID = getString(R.string.my_email);
+            String AppNAME = getString(R.string.app_name);
+            Uri data = Uri.parse("mailto:"
+                    + emailID
+                    + "?subject=" +AppNAME+ " Feedback" + "&body=" + "");
+            intent.setData(data);
+            startActivity(intent);
         });
         String versionName = BuildConfig.VERSION_NAME;
         version.setText("Version "+versionName);
 
-        policy.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                WebViewPage("Privacy Policy", getString(R.string.policy_url));
-            }
-        });
+        policy.setOnClickListener(v -> WebViewPage(getString(R.string.policy_url)));
 
         loadFacebookAds();
 
     }
-    private void WebViewPage(String title,String url) {
+    private void WebViewPage(String url) {
         Intent t = new Intent(AboutActivity.this, WebActivity.class);
-        t.putExtra("title",title);
+        t.putExtra("title", "Privacy Policy");
         t.putExtra("url",url);
         startActivity(t);
     }
@@ -89,10 +74,7 @@ public class AboutActivity extends AppCompatActivity {
     }
 
     public void loadFacebookAds() {
-        MobileAds.initialize(this, new OnInitializationCompleteListener() {
-            @Override
-            public void onInitializationComplete(InitializationStatus initializationStatus) {
-            }
+        MobileAds.initialize(this, initializationStatus -> {
         });
 
         adView = findViewById(R.id.adView);
